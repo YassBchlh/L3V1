@@ -38,6 +38,11 @@
   "build": {
     "appId": "com.podcast.generator",
     "productName": "Podcast Generator",
+    "publish": {
+      "provider": "github",
+      "owner": "YassBchlh",
+      "repo": "L3V1"
+    },
     "files": [
       "dist/**/*",
       "electron/**/*"
