@@ -12,15 +12,15 @@ let servicesStopped = false;
 function findProjectRoot() {
 	if (!app.isPackaged) return path.join(__dirname, "../..");
 
-	// Remonte depuis le .exe jusqu'à trouver docker-compose.yml
-	let dir = path.dirname(app.getPath("exe"));
-	for (let i = 0; i < 6; i++) {
+	const exeDir = path.dirname(app.getPath("exe"));
+	const candidates = [
+		exeDir,
+		path.join(exeDir, "frontend"),
+	];
+	for (const dir of candidates) {
 		if (existsSync(path.join(dir, "docker-compose.yml"))) return dir;
-		const parent = path.dirname(dir);
-		if (parent === dir) break;
-		dir = parent;
 	}
-	return path.dirname(app.getPath("exe"));
+	return exeDir;
 }
 
 const projectRoot = findProjectRoot();
