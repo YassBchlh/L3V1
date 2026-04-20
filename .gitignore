@@ -1,6 +1,7 @@
 # Environnements virtuels Python
 venv/
 tts/
+!back/TTs/
 
 # Dépendances Node
 frontend/node_modules/
@@ -12,8 +13,7 @@ frontend/dist/
 frontend/dist-electron/
 
 # Fichiers générés par l'app
-outputs/tts_final/
-outputs/tts_tmp/
+outputs/
 temp_uploads/
 
 # Cache Python
@@ -26,6 +26,9 @@ builder-effective-config.yaml
 
 # Logs
 *.log
+
+# Claude Code
+.claude/
 
 # OS
 .DS_Store
