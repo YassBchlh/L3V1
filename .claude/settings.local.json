@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cp *)",
+      "Bash(venv/Scripts/python -c \"from pydub import AudioSegment; print\\('pydub OK'\\)\")",
+      "Bash(where ffmpeg *)",
+      "Bash(ffmpeg -version)"
+    ]
+  }
+}

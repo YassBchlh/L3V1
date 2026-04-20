@@ -1,0 +1,15 @@
+fastapi
+uvicorn
+requests
+pydantic
+pydub
+python-multipart
+yt-dlp
+trafilatura
+pymupdf
+cairosvg
+faster-whisper
+youtube-transcript-api
+docling
+pandas
+tabulate

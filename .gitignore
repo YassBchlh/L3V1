@@ -1,0 +1,32 @@
+# Environnements virtuels Python
+venv/
+tts/
+
+# Dépendances Node
+frontend/node_modules/
+
+# Build Electron
+win-unpacked/
+release/
+frontend/dist/
+frontend/dist-electron/
+
+# Fichiers générés par l'app
+outputs/tts_final/
+outputs/tts_tmp/
+temp_uploads/
+
+# Cache Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Config electron-builder
+builder-effective-config.yaml
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db

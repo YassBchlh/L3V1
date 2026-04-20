@@ -1,0 +1,58 @@
+[
+  {
+    "id": "2b1be527a2c048d6942a4a6665357ffa",
+    "nom": "Paul",
+    "langue": "fr",
+    "wav": "fr_male_01.wav",
+    "audio": "/audios/Paul.mp3"
+  },
+  {
+    "id": "ebddfd432d584c77a93ef2237c77d419",
+    "nom": "Marc",
+    "langue": "fr",
+    "wav": "fr_male_02.wav",
+    "audio": "/audios/Marc.mp3"
+  },
+  {
+    "id": "30bf44da30ab46f99593d897d29005db",
+    "nom": "Eva",
+    "langue": "fr",
+    "wav": "fr_female_01.wav",
+    "audio": "/audios/Eva.mp3"
+  },
+  {
+    "id": "a0051e6c989246e0844c26d8857a91e5",
+    "nom": "Marie",
+    "langue": "fr",
+    "wav": "fr_female_02.wav",
+    "audio": "/audios/Marie.mp3"
+  },
+  {
+    "id": "dc478fbd36db4d4f86630cc0641f46ca",
+    "nom": "Lea",
+    "langue": "en",
+    "wav": "en_female_01.wav",
+    "audio": "/audios/Lea.mp3"
+  },
+  {
+    "id": "bddf65d5a84c4a9aa36b7136bdac57a9",
+    "nom": "Jessy",
+    "langue": "en",
+    "wav": "en_female_02.wav",
+    "audio": "/audios/Jessy.mp3"
+  },
+  {
+    "id": "ee29946e7b034376af34e60e49ed8aba",
+    "nom": "John",
+    "langue": "en",
+    "wav": "en_male_01.wav",
+    "audio": "/audios/John.mp3"
+  },
+  {
+    "id": "a2d7c650f2ed498ab782e97e2d3eb468",
+    "nom": "Adam",
+    "langue": "en",
+    "wav": "en_male_02.wav",
+    "audio": "/audios/Adam.mp3"
+  }
+]

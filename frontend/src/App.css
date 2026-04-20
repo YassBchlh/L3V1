@@ -1,0 +1,88 @@
+/* Version5/frontend/src/App.css */
+:root {
+  --bg: #f6f7fb;
+  --panel: #ffffff;
+  --panel-2: #f1f4f9;
+  --text: #16181d;
+  --muted: #6b7280;
+  --border: #d8dee8;
+  --primary: #3b82f6;
+  --primary-hover: #8b5cf6;
+  --danger: #e53935;
+  --shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  --backdrop: none;
+}
+
+body[data-theme="dark"] {
+  --bg: linear-gradient(135deg, #09090b 0%, #18181b 100%);
+  --panel: rgba(255, 255, 255, 0.02);
+  --panel-2: rgba(0, 0, 0, 0.3);
+  --text: rgba(255, 255, 255, 0.9);
+  --muted: #a1a1aa;
+  --border: rgba(255, 255, 255, 0.05);
+  --primary: #3b82f6;
+  --primary-hover: #8b5cf6;
+  --danger: #dc2626;
+  --shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  --backdrop: blur(16px);
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  min-height: 100%;
+  width: 100%;
+}
+
+body {
+  background: var(--bg);
+  background-attachment: fixed;
+  color: var(--text);
+  font-family: 'Outfit', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  transition: color 0.25s ease;
+  -webkit-font-smoothing: antialiased;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+.global-theme-wrap {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  z-index: 99999;
+}
+
+.global-theme-btn {
+  border: 1px solid var(--border);
+  background: var(--panel);
+  color: var(--text);
+  border-radius: 999px;
+  padding: 10px 16px;
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.global-theme-btn:hover {
+  background: var(--panel-2);
+}
+
+.global-theme-btn:active {
+  transform: translateY(1px);
+}
+
+/* Utilitaire pour boutons désactivés */
+.disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}

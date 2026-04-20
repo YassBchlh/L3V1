@@ -1,0 +1,70 @@
+{
+  "name": "frontend",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "main": "electron/main.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "lint": "eslint .",
+    "preview": "vite preview",
+    "start": "electron .",
+    "dist": "vite build && electron-builder build"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.103.0",
+    "lucide-react": "^1.8.0",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.4",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.1",
+    "concurrently": "^9.2.1",
+    "electron": "^41.0.4",
+    "electron-builder": "^25.1.8",
+    "eslint": "^9.39.4",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "eslint-plugin-react-refresh": "^0.5.2",
+    "globals": "^17.4.0",
+    "vite": "^8.0.1",
+    "vite-plugin-electron": "^0.29.1",
+    "vite-plugin-electron-renderer": "^0.14.6",
+    "wait-on": "^9.0.4"
+  },
+  "build": {
+    "appId": "com.podcast.generator",
+    "productName": "Podcast Generator",
+    "files": [
+      "dist/**/*",
+      "electron/**/*"
+    ],
+    "extraFiles": [
+      { "from": "../docker-compose.yml", "to": "docker-compose.yml" },
+      { "from": "../Dockerfile", "to": "Dockerfile" },
+      { "from": "../Dockerfile.tts", "to": "Dockerfile.tts" },
+      { "from": "../requirements-tts.txt", "to": "requirements-tts.txt" },
+      { "from": "../back", "to": "back" },
+      { "from": "../voix.json", "to": "voix.json" },
+      { "from": "../intros", "to": "intros" }
+    ],
+    "win": {
+      "target": [{ "target": "nsis", "arch": ["x64"] }],
+      "icon": "src/assets/logo-app.png"
+    },
+    "mac": {
+      "target": [{ "target": "dmg", "arch": ["x64", "arm64"] }],
+      "icon": "src/assets/logo-app.png"
+    },
+    "linux": {
+      "target": [{ "target": "AppImage", "arch": ["x64"] }],
+      "icon": "src/assets/logo-app.png"
+    },
+    "directories": {
+      "output": "../release"
+    }
+  }
+}

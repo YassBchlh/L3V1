@@ -1,0 +1,12 @@
+venv/
+tts/
+frontend/
+node_modules/
+win-unpacked/
+*.log
+__pycache__/
+*.pyc
+.git/
+outputs/tts_final/
+outputs/tts_tmp/
+temp_uploads/
