@@ -12,6 +12,7 @@ services:
       - ./voix.json:/app/voix.json:ro
     environment:
       - OLLAMA_API_URL=http://host.docker.internal:11434/api/generate
+      - TTS_API_URL=http://tts:8001
     extra_hosts:
       - "host.docker.internal:host-gateway"
     restart: unless-stopped

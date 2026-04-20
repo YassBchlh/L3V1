@@ -29,7 +29,7 @@ OUTPUT_DIR = BASE_DIR / "outputs"
 UPLOAD_DIR = BASE_DIR / "temp_uploads"
 INTROS_DIR = BASE_DIR / "intros"
 VOIX_JSON = BASE_DIR / "voix.json"
-TTS_API_URL = "http://127.0.0.1:8001"
+TTS_API_URL = os.environ.get("TTS_API_URL", "http://127.0.0.1:8001")
  
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)

@@ -2,7 +2,7 @@
 import json
 import os
 import re
-import subprocess
+import requests
 from typing import List, Dict, Any, Tuple
 
 
@@ -155,31 +155,19 @@ def call_llm_with_curl(
         },
     }
 
-    cmd = [
-        "curl",
-        "-sS",
-        "-X", "POST",
-        api_url,
-        "-H", "Content-Type: application/json",
-        "-d", json.dumps(payload),
-    ]
-
     try:
-        result = subprocess.run(
-            cmd,
-            capture_output=True,
-            text=True,
-            encoding="utf-8",
+        response = requests.post(
+            api_url,
+            json=payload,
             timeout=timeout,
-            check=True,
         )
-    except subprocess.TimeoutExpired:
+        response.raise_for_status()
+    except requests.Timeout:
         raise ScenarioError("Le serveur Ollama a mis trop de temps à répondre.")
-    except subprocess.CalledProcessError as e:
-        error_msg = (e.stderr or e.stdout or str(e)).strip()
-        raise ScenarioError(f"Erreur curl lors de l'appel API : {error_msg}")
+    except requests.RequestException as e:
+        raise ScenarioError(f"Erreur lors de l'appel API : {str(e)}")
 
-    raw_output = result.stdout.strip()
+    raw_output = response.text.strip()
     if not raw_output:
         raise ScenarioError("Réponse vide de l'API.")
 
