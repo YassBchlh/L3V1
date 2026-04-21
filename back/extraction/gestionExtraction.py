@@ -11,6 +11,7 @@ import os
 import re
 import hashlib
 import tempfile
+import base64
 
 import requests
 import yt_dlp
@@ -239,10 +240,39 @@ def svg_to_png_bytes(svg_path: str) -> bytes:
 EXTENSIONS_IMAGES = (".jpg", ".jpeg", ".png", ".webp", ".gif", ".svg", ".heic")
 
 
+GEMINI_IMAGE_PROMPT = """Analyse le contenu principal de cette image pour un podcast audio.
+
+Ignore complètement :
+- Les logos et marques
+- Les éléments décoratifs et fonds
+- Les numéros de page
+- Les en-têtes et pieds de page répétitifs
+- Les icônes et boutons d'interface
+
+Concentre-toi uniquement sur :
+- Le contenu informatif principal (texte, données, schémas)
+- Les graphiques et leurs données clés
+- Les tableaux et leurs informations importantes
+- Les schémas et diagrammes explicatifs
+
+Réponds de façon concise et factuelle, comme si tu décrivais le contenu à quelqu'un qui ne peut pas voir l'image."""
+
+MIME_TYPES = {
+    ".jpg": "image/jpeg",
+    ".jpeg": "image/jpeg",
+    ".png": "image/png",
+    ".webp": "image/webp",
+    ".gif": "image/gif",
+    ".heic": "image/heic",
+}
+
+
 class ImageSource(ContentSource):
-    def __init__(self, imagePath: str):
+    def __init__(self, imagePath: str, llm_engine: str = "local", gemini_api_key: str = ""):
         super().__init__()
         self.imagePath = imagePath
+        self.llm_engine = llm_engine
+        self.gemini_api_key = gemini_api_key
 
     def set_title(self):
         if self.imagePath.startswith("https://"):
@@ -268,16 +298,45 @@ class ImageSource(ContentSource):
             valider_fichier_local(self.imagePath, EXTENSIONS_IMAGES)
 
     def extract_text(self):
-        """
-        Fallback sans modèle multimodal :
-        on retourne un texte neutre décrivant la présence de l'image.
-        """
+        if self.llm_engine == "gemini" and self.gemini_api_key:
+            return self._extract_with_gemini()
+
         filename = os.path.basename(self.imagePath)
         return (
             f"Image importée : {filename}. "
             "Analyse automatique détaillée du contenu image indisponible "
             "car aucun modèle multimodal local n'est configuré."
         )
+
+    def _extract_with_gemini(self) -> str:
+        if self.imagePath.endswith(".svg"):
+            image_bytes = cairosvg.svg2png(url=self.imagePath)
+            mime = "image/png"
+        else:
+            ext = Path(self.imagePath).suffix.lower()
+            mime = MIME_TYPES.get(ext)
+            if mime is None:
+                raise ValueError(f"Format image non supporté : {ext}")
+            with open(self.imagePath, "rb") as f:
+                image_bytes = f.read()
+
+        image_b64 = base64.b64encode(image_bytes).decode("utf-8")
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={self.gemini_api_key}"
+        payload = {
+            "contents": [{
+                "parts": [
+                    {"inline_data": {"mime_type": mime, "data": image_b64}},
+                    {"text": GEMINI_IMAGE_PROMPT},
+                ]
+            }]
+        }
+        response = requests.post(url, json=payload, timeout=60)
+        response.raise_for_status()
+        data = response.json()
+        try:
+            return data["candidates"][0]["content"]["parts"][0]["text"].strip()
+        except (KeyError, IndexError):
+            raise ExtractionError(f"Réponse Gemini invalide pour l'image : {data}")
 
     def clean_text(self, extracted_text):
         return extracted_text.strip() if extracted_text else ""
@@ -640,7 +699,7 @@ class DocumentFileSource(ContentSource):
 # EXTRACTION FINALE
 # ============================================================
 
-def extraction_final(ressources: list, fichier_sortie: str = None):
+def extraction_final(ressources: list, fichier_sortie: str = None, llm_engine: str = "local", gemini_api_key: str = ""):
     """
     Extrait le contenu de chaque ressource et écrit les résultats dans un fichier Markdown.
     """
@@ -654,7 +713,7 @@ def extraction_final(ressources: list, fichier_sortie: str = None):
 
     def traiter_ressource(ressource):
         if ressource.endswith(extensions_images):
-            source = ImageSource(ressource)
+            source = ImageSource(ressource, llm_engine=llm_engine, gemini_api_key=gemini_api_key)
             source.validate()
             return source.final_info()
 

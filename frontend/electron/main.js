@@ -27,7 +27,7 @@ const projectRoot = findProjectRoot();
 
 function startServices() {
 	console.log("Starting Docker services from:", projectRoot);
-	const docker = spawn("docker", ["compose", "up", "-d"], {
+	const docker = spawn("docker", ["compose", "up", "--build", "-d"], {
 		cwd: projectRoot,
 		stdio: "pipe"
 	});

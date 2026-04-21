@@ -36,7 +36,7 @@ UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 INTROS_DIR.mkdir(parents=True, exist_ok=True)
  
 app = FastAPI(title="Podcast Generator API")
- 
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
@@ -208,6 +208,9 @@ async def generate_script(
     links: str = Form(default="[]"),
     podcast_language: str = Form(default="Français"),
     podcast_duration: str = Form(default="Court (1-3 min)"),
+    podcast_style: str = Form(default="Sérieux"),
+    llm_engine: str = Form(default="local"),
+    gemini_api_key: str = Form(default=""),
     participants: str = Form(default="[]"),
 ):
     try:
@@ -237,29 +240,27 @@ async def generate_script(
         if not parsed_participants:
             parsed_participants = ["Voix_01", "Voix_02"]
  
-        segments = run_full_pipeline(resources)
+        segments = run_full_pipeline(resources, llm_engine=llm_engine, gemini_api_key=gemini_api_key)
  
         if not segments:
             raise HTTPException(status_code=400, detail="Aucun segment généré.")
  
-        script = generate_dialogue_from_segments(
+        result = generate_dialogue_from_segments(
             segments=segments,
             podcast_duration=podcast_duration,
             participants=parsed_participants,
             podcast_language=podcast_language,
+            podcast_style=podcast_style,
+            llm_engine=llm_engine,
+            gemini_api_key=gemini_api_key,
         )
- 
+
+        script = result["script"]
+        title = result["title"]
+        summary = result["summary"]
+
         if not script or not script.strip():
             raise HTTPException(status_code=500, detail="Le script généré est vide.")
- 
-        title = f"Podcast à partir de {len(resources)} ressource(s)"
-        if files and not parsed_links:
-            first_name = files[0].filename if files[0].filename else "Podcast généré"
-            title = Path(first_name).stem
-        elif files and parsed_links:
-            title = f"Podcast multi-sources ({len(resources)})"
-        elif parsed_links and len(parsed_links) == 1:
-            title = "Podcast à partir de ressources"
  
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         script_output_path = OUTPUT_DIR / f"podcast_script_{timestamp}.txt"
@@ -285,7 +286,7 @@ async def generate_script(
             "title": title,
             "date": datetime.now().strftime("%d/%m/%Y"),
             "generated_at": datetime.now().isoformat(),
-            "summary": f"Podcast généré à partir de {len(resources)} ressource(s).",
+            "summary": summary,
             "description": f"Langue : {podcast_language} | Durée : {podcast_duration}",
             "script": script,
             "segments_count": len(segments),

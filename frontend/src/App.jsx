@@ -5,27 +5,30 @@ import ScriptPage from "./pages/ScriptPage";
 import PlayerPage from "./pages/PlayerPage";
 import ArchivesPage from "./pages/ArchivesPage";
 import "./App.css";
- 
+
 const API_BASE_URL = "http://127.0.0.1:8000";
- 
+
 function App() {
   const [page, setPage] = useState("builder");
   const [theme, setTheme] = useState("dark");
   const [ttsEngine, setTtsEngine] = useState("fish");
- 
+
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [links, setLinks] = useState([]);
   const [participants, setParticipants] = useState(["Paul", "Eva"]);
   const [language, setLanguage] = useState("Français");
   const [duration, setDuration] = useState("Court (1-3 min)");
- 
+  const [style, setStyle] = useState("Sérieux");
+  const [llmEngine, setLlmEngine] = useState("local");
+  const [geminiApiKey, setGeminiApiKey] = useState("");
+
   const [useIntro, setUseIntro] = useState(false);
   const [useOutro, setUseOutro] = useState(false);
   const [selectedIntro, setSelectedIntro] = useState("");
   const [selectedOutro, setSelectedOutro] = useState("");
- 
+
   const [archives, setArchives] = useState([]);
- 
+
   const [generatedData, setGeneratedData] = useState({
     id: null,
     title: "",
@@ -39,36 +42,15 @@ function App() {
     audioUrl: "",
     segmentsCount: 0,
   });
- 
+
   const [loadingScript, setLoadingScript] = useState(false);
   const [loadingAudio, setLoadingAudio] = useState(false);
   const [error, setError] = useState("");
- 
-  const fetchArchives = async () => {
-    try {
-      const res = await fetch(`${API_BASE_URL}/archives`);
-      if (!res.ok) return;
-      const data = await res.json();
-      setArchives(data.archives || []);
-    } catch {
-      // silencieux si le backend est éteint
-    }
-  };
- 
-  useEffect(() => {
-    fetchArchives();
-  }, []);
- 
-  useEffect(() => {
-    if (page === "builder") {
-      fetchArchives();
-    }
-  }, [page]);
- 
+
   useEffect(() => {
     document.body.setAttribute("data-theme", theme);
   }, [theme]);
- 
+
   useEffect(() => {
     if (page === "builder") {
       document.title = "Page d'accueil";
@@ -80,11 +62,11 @@ function App() {
       document.title = "Archives";
     }
   }, [page]);
- 
+
   const handleToggleTheme = () => {
     setTheme((prev) => (prev === "dark" ? "light" : "dark"));
   };
- 
+
   const handleAddParticipant = (voiceName) => {
     setParticipants((prev) => {
       if (prev.length >= 4) return prev;
@@ -92,14 +74,14 @@ function App() {
       return [...prev, voiceName];
     });
   };
- 
+
   const handleRemoveParticipant = (indexToRemove) => {
     setParticipants((prev) => {
       if (prev.length <= 2) return prev;
       return prev.filter((_, index) => index !== indexToRemove);
     });
   };
- 
+
   const handleChangeParticipant = (indexToChange, newVoiceName) => {
     setParticipants((prev) => {
       if (prev.includes(newVoiceName)) return prev;
@@ -108,7 +90,7 @@ function App() {
       return updated;
     });
   };
- 
+
   const handlePlayArchive = (archive) => {
     setGeneratedData({
       id: archive.id || null,
@@ -125,47 +107,61 @@ function App() {
     });
     setPage("player");
   };
- 
+
   const handleGenerateScript = async () => {
     setLoadingScript(true);
     setError("");
- 
+
     if (selectedFiles.length === 0 && links.length === 0) {
       setError("Ajoute au moins une source.");
       setLoadingScript(false);
       return;
     }
- 
+
     try {
       const formData = new FormData();
- 
+
       selectedFiles.forEach((file) => {
         formData.append("files", file);
       });
- 
+
       formData.append("links", JSON.stringify(links));
       formData.append("podcast_language", language);
       formData.append("podcast_duration", duration);
+      formData.append("podcast_style", style);
+      formData.append("llm_engine", llmEngine);
+      formData.append("gemini_api_key", geminiApiKey);
       formData.append("participants", JSON.stringify(participants));
- 
+
       const response = await fetch(`${API_BASE_URL}/generate-script`, {
         method: "POST",
         body: formData,
       });
- 
+
       let data = {};
       try {
         data = await response.json();
       } catch {
         throw new Error("Réponse backend invalide.");
       }
- 
+
       if (!response.ok || data.error) {
         throw new Error(
           data.detail || data.error || "Erreur de génération du script."
         );
       }
- 
+
+      const newEntry = {
+        id: data.id || null,
+        title: data.title || "Podcast généré",
+        date: data.date || "",
+        generated_at: data.generated_at || "",
+        script_path: data.script_path || "",
+        audio_path: "",
+        audio_url: "",
+      };
+      setArchives((prev) => [newEntry, ...prev]);
+
       setGeneratedData({
         id: data.id || null,
         title: data.title || "Podcast généré",
@@ -179,7 +175,7 @@ function App() {
         audioUrl: data.audio_url || "",
         segmentsCount: data.segments_count || 0,
       });
- 
+
       setPage("script");
     } catch (e) {
       setError(e.message || "Erreur lors de la génération");
@@ -187,17 +183,17 @@ function App() {
       setLoadingScript(false);
     }
   };
- 
+
   const handleGenerateAudio = async () => {
     setLoadingAudio(true);
     setError("");
- 
+
     if (!generatedData.script.trim()) {
       setError("Le script est vide.");
       setLoadingAudio(false);
       return;
     }
- 
+
     try {
       const response = await fetch(`${API_BASE_URL}/generate-audio`, {
         method: "POST",
@@ -214,27 +210,38 @@ function App() {
           tts_engine: ttsEngine,
         }),
       });
- 
+
       let data = {};
       try {
         data = await response.json();
       } catch {
         throw new Error("Réponse backend invalide.");
       }
- 
+
       if (!response.ok || data.error) {
         throw new Error(
           data.detail || data.error || "Erreur de génération audio."
         );
       }
- 
+
+      const audioPath = data.audio_path || generatedData.audioPath;
+      const audioUrl = data.audio_url || data.audio_path || generatedData.audioUrl;
+
       setGeneratedData((prev) => ({
         ...prev,
         id: data.id || prev.id,
-        audioPath: data.audio_path || prev.audioPath,
-        audioUrl: data.audio_url || data.audio_path || prev.audioUrl,
+        audioPath,
+        audioUrl,
       }));
- 
+
+      setArchives((prev) =>
+        prev.map((entry) =>
+          entry.id === (data.id || generatedData.id)
+            ? { ...entry, audio_path: audioPath, audio_url: audioUrl }
+            : entry
+        )
+      );
+
       setPage("player");
     } catch (e) {
       setError(e.message || "Erreur audio");
@@ -242,13 +249,13 @@ function App() {
       setLoadingAudio(false);
     }
   };
- 
+
   const globalButton = (
     <button className="global-theme-btn" onClick={handleToggleTheme}>
       {theme === "dark" ? "☀️ Mode clair" : "🌙 Mode nuit"}
     </button>
   );
- 
+
   if (page === "player") {
     return (
       <>
@@ -276,7 +283,7 @@ function App() {
       </>
     );
   }
- 
+
   if (page === "script") {
     return (
       <>
@@ -296,7 +303,7 @@ function App() {
       </>
     );
   }
- 
+
   if (page === "archives") {
     return (
       <>
@@ -309,7 +316,7 @@ function App() {
       </>
     );
   }
- 
+
   return (
     <>
       <div className="global-theme-wrap">{globalButton}</div>
@@ -323,6 +330,12 @@ function App() {
         setLanguage={setLanguage}
         duration={duration}
         setDuration={setDuration}
+        style={style}
+        setStyle={setStyle}
+        llmEngine={llmEngine}
+        setLlmEngine={setLlmEngine}
+        geminiApiKey={geminiApiKey}
+        setGeminiApiKey={setGeminiApiKey}
         loadingScript={loadingScript}
         error={error}
         onGenerate={handleGenerateScript}
@@ -346,6 +359,5 @@ function App() {
     </>
   );
 }
- 
+
 export default App;
- 

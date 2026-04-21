@@ -46,6 +46,12 @@ function BuilderPage({
   setLanguage,
   duration,
   setDuration,
+  style,
+  setStyle,
+  llmEngine,
+  setLlmEngine,
+  geminiApiKey,
+  setGeminiApiKey,
   loadingScript,
   error,
   onGenerate,
@@ -207,6 +213,7 @@ function BuilderPage({
   if (!voice) return false;
   return language === "Français" ? voice.langue !== "fr" : voice.langue !== "en";
 });
+  const geminiMissingKey = llmEngine === "gemini" && !geminiApiKey.trim();
   return (
     <div className="builder-page">
       <div className="builder-container">
@@ -408,7 +415,40 @@ function BuilderPage({
                 <option>Moyen (3-5 min)</option>
                 <option>Long (5-10 min)</option>
               </select>
- 
+
+              <select
+                className="builder-select"
+                value={style}
+                onChange={(e) => setStyle(e.target.value)}
+              >
+                <option value="Sérieux">🎓 Sérieux</option>
+                <option value="Humoristique">😄 Humoristique</option>
+                <option value="Vulgarisation">💡 Vulgarisation</option>
+                <option value="Débat">⚔️ Débat</option>
+                <option value="Interview">🎙️ Interview</option>
+              </select>
+
+              {/* SÉLECTEUR MOTEUR LLM */}
+              <select
+                className="builder-select"
+                value={llmEngine}
+                onChange={(e) => setLlmEngine(e.target.value)}
+              >
+                <option value="local">🖥️ Local (Ollama)</option>
+                <option value="gemini">✨ Gemini (API)</option>
+              </select>
+
+              {llmEngine === "gemini" && (
+                <input
+                  className="builder-link-input"
+                  type="password"
+                  placeholder="Clé API Gemini (AIza...)"
+                  value={geminiApiKey}
+                  onChange={(e) => setGeminiApiKey(e.target.value)}
+                  style={{ marginTop: "6px" }}
+                />
+              )}
+
               {/* SÉLECTEUR MOTEUR TTS */}
               <select
                 className="builder-select"
@@ -478,11 +518,16 @@ function BuilderPage({
               ⚠️ Certains participants ne correspondent pas à la langue sélectionnée. Veuillez remplacer les voix ou changer la langue.
             </div>
           )}
+          {geminiMissingKey && (
+            <div className="builder-error-box" style={{ marginBottom: "12px" }}>
+              ⚠️ Gemini est sélectionné mais la clé API est manquante.
+            </div>
+          )}
           <button
             type="button"
             className="builder-generate-btn"
             onClick={onGenerate}
-            disabled={loadingScript || hasLanguageMismatch}
+            disabled={loadingScript || hasLanguageMismatch || geminiMissingKey}
           >
             {loadingScript ? "⏳ Génération..." : "🚀 Générer le podcast"}
           </button>

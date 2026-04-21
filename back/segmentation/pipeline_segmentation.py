@@ -23,7 +23,7 @@ def _get_latest_extraction_markdown(search_dir: str = ".") -> str:
     return str(latest_file)
 
 
-def run_full_pipeline(resources: List[str]) -> List[Dict[str, Any]]:
+def run_full_pipeline(resources: List[str], llm_engine: str = "local", gemini_api_key: str = "") -> List[Dict[str, Any]]:
     if not resources:
         raise PipelineError("Aucune ressource fournie.")
 
@@ -42,7 +42,7 @@ def run_full_pipeline(resources: List[str]) -> List[Dict[str, Any]]:
         # 📄 CAS 2 : fichier
         else:
             try:
-                md_path = extraction_final([res])
+                md_path = extraction_final([res], llm_engine=llm_engine, gemini_api_key=gemini_api_key)
 
                 if not md_path:
                     print(f"[FILE ERROR] extraction vide pour {res}")
